@@ -30,19 +30,19 @@ The widget takes the following arguments:
 ### Screenshots
 
 Default settings, no contributions:
-![github-today-default-none.jpg](./screenshots/github-today-default-none.jpg)
+![github-today-default-none.png](./screenshots/github-today-default-none.png)
 
 Default settings, one contribution:
-![github-today-default-one.jpg](./screenshots/github-today-default-one.jpg)
+![github-today-default-one.png](./screenshots/github-today-default-one.png)
 
 Default settings, more than one contribution:
-![github-today-default-two.jpg](./screenshots/github-today-default-two.jpg)
+![github-today-default-two.png](./screenshots/github-today-default-two.png)
 
 Example using all arguments (see Installation), no contributions:
-![github-today-example-none.jpg](./screenshots/github-today-example-none.jpg)
+![github-today-example-none.png](./screenshots/github-today-example-none.png)
 
 Example using all arguments (see Installation), one contribution:
-![github-today-example-one.jpg](./screenshots/github-today-example-one.jpg)
+![github-today-example-one.png](./screenshots/github-today-example-one.png)
 
 ## Installation
 
