@@ -6,6 +6,7 @@ This widget is inspired by the [github-contributions-widget by streetturtle](htt
 
 1. The widget relies on the https://github-contributions.now.sh/ API, which means if this website is ever taken down, the widget will be useless.
 2. I wanted to specifically view how many contributions I've made today to remind me to commit and push personal projects, which I often forget.
+3. The widget uses easy_async instead of watch, which means the widget never updates unless you reload awesomewm. This widget uses watch and refreshes the contributions every 10 minutes by default (and can be changed using the `interval` argument).
 
 Instead of using an external API, this widget relies on a small application written in Go that will make an HTTP to Github to retrieve the number of contributions for today. This application and its source code can be found in the `api` directory.
 
