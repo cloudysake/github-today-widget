@@ -8,25 +8,52 @@ This widget is inspired by the [github-contributions-widget by streetturtle](htt
 2. I wanted to specifically view how many contributions I've made today to remind me to commit and push personal projects, which I often forget.
 3. The widget uses easy_async instead of watch, which means the widget never updates unless you reload awesomewm. This widget uses watch and refreshes the contributions every 10 minutes by default (and can be changed using the `interval` argument).
 
-Instead of using an external API, this widget relies on a small application written in Go that will make an HTTP to Github to retrieve the number of contributions for today. This application and its source code can be found in the `api` directory.
-
+Instead of using an external API, this widget relies on GitHub CLI to perform an API call to retrieve the number of contributions for today. 
 ## Customization
 
 The widget takes the following arguments:
 
-| Name | Default | Description |
-|---|---|---|
-| `username` | `<empty string>` | (Required) GitHub username. |
-| `widget_path` | `widgets` | The directory that your widget folder is installed in, relative to your config path. The default value of "widgets" means your plugin folder is located at ~/.config/awesome/widgets. |
-| `interval` | `600` | How many seconds to wait before checking for new contributions. The default is 600 seconds (10 minutes). |
-| `left` | `0` | Amount of left padding in the widget's margin container. |
-| `right` | `0` | Amount of right padding in the widget's margin container. |
-| `top` | `0` | Amount of top padding in the widget's margin container. |
-| `bottom` | `0` | Amount of bottom padding in the widget's margin container. |
-| `no_contrib_text` | `No contributions today` | The text to display when there are no contributions today. |
-| `no_contrib_markup` | `<span foreground="#ff3c3c"><b>%s</b></span>` | The markup string to show if there have been no contributions today. %s will be replaced with the text from the contrib_text argument. |
-| `contrib_text` | `%s %s today` | The text to display when there are contributions today. The first %s will be replaced with the number of contributions, and the second %s will be replaced with the singular / plural version of the word "contributions". It is ok to only use one %s instead of two if you only need the number of contributions displayed (ex: contrib_text = "contributions: %s"). |
-| `contrib_markup` | `<span foreground="#9be9a8"><b>%s</b></span>` | The markup string to show if there have been contributions today. %s will be replaced with the text from the contrib_text argument. |
+```lua
+-- Default arguments
+github_today_widget({
+  username = '',  -- (Required) Your GitHub username.
+  interval = 600, -- Seconds to wait between updates
+  left = 0,       -- Widget's left padding
+  right = 0,      -- Widget's right padding
+  top = 0,        -- Widget's top padding
+  bottom = 0,     -- Widget's bottom padding
+  colors = {      -- Colors used in the %FG% and %BG% tags (see Tags section below)
+    fg = {
+      "#ff3c3c",  -- Value of %FG% tag if contributions = 0
+      "#9be9a8",  -- Value of %FG% tag if contributions > 0
+    },
+    bg = {
+      "#ff3c3c",  -- Value of %BG% tag if contributions = 0
+      "#9be9a8",  -- Value of %BG% tag if contributions > 0
+    }
+  },
+  markup = {
+    -- Widget's markup if contributions = 0
+    -- (replaces special tags shown in Tags section below).
+    '<span foreground="%bg%"><b>No contributions today</b></span>',
+    -- Widget's markup if contributions > 0
+    -- (replaces special tags shown in Tags section below).
+    '<span foreground="%bg%"><b>%COUNT% contribution%plural% today</b></span>',
+  }
+}),
+```
+
+### Tags
+
+The strings used in the `markup` argument accept tags that will be replaced before displaying on the widget.
+
+| Tag | Description |
+|---|---|
+| `%fg%` | The color defined in the `colors.fg` argument. The first color in `colors.fg` is used if contributions = 0, and the second color is used if contributions > 0. |
+| `%bg%` | The color defined in the `colors.bg` argument. The first color in `colors.bg` is used if contributions = 0, and the second color is used if contributions > 0. |
+| `%count%` | Replaced with the number of contributions made today. |
+| `%plural%` | Replaced with the letter s if exactly one contribution has been made today, and an empty string if the contributions today are anything but one. Used for singular / plural words such as contribution/contributions. |
+| `%PLURAL%` | Same as `%plural%`, but capitalized. |
 
 ### Screenshots
 
@@ -39,12 +66,6 @@ Default settings, one contribution:
 Default settings, more than one contribution:
 ![github-today-default-two.png](./screenshots/github-today-default-two.png)
 
-Example using all arguments (see Installation), no contributions:
-![github-today-example-none.png](./screenshots/github-today-example-none.png)
-
-Example using all arguments (see Installation), one contribution:
-![github-today-example-one.png](./screenshots/github-today-example-one.png)
-
 ## Installation
 
 Clone/download repo under **~/.config/awesome** and use widget in **rc.lua**:
@@ -54,37 +75,51 @@ Clone/download repo under **~/.config/awesome** and use widget in **rc.lua**:
 local github_today_widget = require("widgets.github-today-widget.github-today-widget")
 ...
 s.mytasklist, -- Middle widget
-	{ -- Right widgets
-    	layout = wibox.layout.fixed.horizontal,
-		...
-        github_today_widget({
-            username = '<your username>'
-        }),
-		...
+  { -- Right widgets
+    layout = wibox.layout.fixed.horizontal,
+	...
+    github_today_widget({
+      username = '<your username>'
+    }),
+    ...
+  }
 ```
 
-An example using all of the arguments:
+<br>
+Example with arguments:
 
 ```lua
 -- In this example, the widget is installed in ~.config/awesome/widgets/github
 local github_today_widget = require("widgets.github.github-today-widget.github-today-widget")
 ...
 s.mytasklist, -- Middle widget
-	{ -- Right widgets
-    	layout = wibox.layout.fixed.horizontal,
-		...
-        github_today_widget({
-            username = '<your username>',
-            widget_path = 'widgets/github', -- This folder's path is ~/.config/awesome/widgets/github/github-today'
-            left = 10,
-            right = 10,
-            top = 2,
-            bottom = 2,
-            no_contrib_text = "0",
-            no_contrib_markup = '<span foreground="#f0c674">%s</span>',
-            contrib_text = "%s TODAY!", -- ignoring the second %s
-            contrib_markup = '<span foreground="#8abeb7">%s</span>'
-        }),
+  { -- Right widgets
+    layout = wibox.layout.fixed.horizontal,
+    ...
+    github_today_widget({
+      username = '<your username>',
+      left = 10,
+      right = 10,
+      top = 2,
+      bottom = 2,
+      colors = {
+        fg = {
+          "#550000"
+          "#004400",
+        },
+        bg = {
+          "#ff8888",
+          "#88ff88",
+        }
+      },
+      markup = {
+        -- !!!NO CONTRIBUTIONS!!!
+        '<span foreground="%fg%" background="%bg%>!!!NO CONTRIBUTIONS!!!</span>',
+        --  1: "# CONTRIBUTION!"
+        -- 2+: "# CONTRIBUTIONS!"
+        '<span foreground="%bg" background="%bg%>%count% CONTRUBUTION%PLURAL%!</span>',
+      },
+  }),
 		...
 ```
 
