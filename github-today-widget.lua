@@ -4,48 +4,61 @@
 
 -- https://github.com/xorid/awesomewm-github-today-contributions
 -------------------------------------------------------------------------------
-local awful = require("awful")
 local watch = require("awful.widget.watch")
 local wibox = require("wibox")
-local gfs = require("gears.filesystem")
-local config_dir = gfs.get_configuration_dir()
+local filepath = (...):match("(.-)[^%.]+$")
+local json = require(filepath .. ".lib.json.json")
+-- require(filepath .. ".lib.json.json-beautify")
 
 local github_contributions_widget = {}
 
 local function worker(user_args)
+	local default_colors = {
+		fg = {
+			"#ff3c3c",
+			"#9be9a8",
+		},
+		bg = {
+			"#ff3c3c",
+			"#9be9a8",
+		}
+	}
+	local default_markup = {
+		'<span foreground="%fg%"><b>No contributions today</b></span>',
+		'<span foreground="%fg%"><b>%count% contribution%plural% today</b></span>',
+	}
 	local args = user_args or {}
 	local username = args.username or ''
 	local left = args.left or 0
 	local right = args.right or 0
 	local top = args.top or 0
 	local bottom = args.top or 0
-	local widget_path = args.widget_path or 'widgets'
-	local no_contrib_markup = args.no_contrib_markup or '<span foreground="#ff3c3c"><b>%s</b></span>'
-	local no_contrib_text =  args.no_contrib_text or "No contributions today"
-	local contrib_markup = args.contrib_markup or '<span foreground="#9be9a8"><b>%s</b></span>'
-	local contrib_text = args.contrib_text or "%s %s today"
+	local colors = args.colors or default_colors
+	local markup = args.markup or default_markup
 
-	local TODAY_CONTRIBUTIONS_CMD = 'bash -c "' .. config_dir .. widget_path .. '/github-today-widget/api/github-today %s"'
+	local date = os.date("%Y-%m-%d")
+	local TODAY_CONTRIBUTIONS_CMD = 'bash -c "gh api graphql -f query=\'query { user(login: \\"xorid\\") { contributionsCollection(from: \\"' .. date .. 'T05:00:00Z\\", to: \\"' .. date .. 'T05:00:00Z\\") { contributionCalendar { weeks { contributionDays { contributionCount date weekday } } } } } }\'"'
+
+	local create_text = function(contribs)
+		local key = contribs < 1 and 1 or 2
+		local text = markup[key]
+		text = text:gsub("%%fg%%", colors.fg[key])
+		text = text:gsub("%%bg%%", colors.fg[key])
+		text = text:gsub("%%count%%", contribs)
+		text = text:gsub("%%plural%%", contribs == 1 and '' or 's')
+		text = text:gsub("%%PLURAL%%", contribs == 1 and '' or 'S')
+		return text
+	end
 
 	local update_widget = function(widget, stdout, _, _, _)
-		local contribs = tonumber(stdout)
-		local markup
+		local data = json.decode(stdout)["data"]
+		local today = data["user"]["contributionsCollection"]["contributionCalendar"]["weeks"][1]["contributionDays"][1]
+		local contribs = today["contributionCount"]
+
+		-- assert(false, "out: " .. json.beautify(today))
+		local text = create_text(contribs)
 		local textbox = widget:get_children_by_id("today")[1]
-
-		if contribs < 1 then
-			markup = string.format(no_contrib_markup, no_contrib_text)
-		else
-			markup = string.format(
-				contrib_markup,
-				string.format(
-					contrib_text,
-					contribs,
-					contribs == 1 and 'contribution' or 'contributions'
-				)
-			)
-		end
-
-		textbox.markup = markup
+		textbox.markup = text
 	end
 
 	github_contributions_widget = wibox.widget(
