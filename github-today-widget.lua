@@ -37,7 +37,7 @@ local function worker(user_args)
 	local markup = args.markup or default_markup
 
 	local date = os.date("%Y-%m-%d")
-	local TODAY_CONTRIBUTIONS_CMD = 'bash -c "gh api graphql -f query=\'query { user(login: \\"xorid\\") { contributionsCollection(from: \\"' .. date .. 'T05:00:00Z\\", to: \\"' .. date .. 'T05:00:00Z\\") { contributionCalendar { weeks { contributionDays { contributionCount date weekday } } } } } }\'"'
+	local TODAY_CONTRIBUTIONS_CMD = 'bash -c \'gh api graphql -f query="query { user(login: \\"xorid\\") { contributionsCollection(from: \\"$(date +"%%Y-%%m-%%d")T05:00:00Z\\", to: \\"$(date +"%%Y-%%m-%%d")T05:00:00Z\\") { contributionCalendar { weeks { contributionDays { contributionCount date weekday } } } } } }"\''
 
 	local create_text = function(contribs)
 		local key = contribs < 1 and 1 or 2
